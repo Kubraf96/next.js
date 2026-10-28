@@ -1,31 +1,33 @@
-import styles from "./page.module.css";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import { formatDate } from "@/lib/format";
+import { getPostBySlug } from "@/lib/wordpress";
+
 export default async function PostPage({ params }) {
   const { slug } = await params;
-  // …
-
-  const response = await fetch(
-    `${process.env.WORDPRESS_URL}/wp-json/wp/v2/posts?slug=${slug}`,
-  );
-  // WordPress always returns an array, even for a single match
-  const posts = await response.json();
-  const post = posts[0];
+  const post = await getPostBySlug(slug);
 
   if (!post) {
     notFound();
   }
+
+  const date = formatDate(post.date);
+  const image = post._embedded?.["wp:featuredmedia"]?.[0];
+
   return (
     <main>
-      <article className={styles.post}>
-        <Link href="/posts">← All posts</Link>
-        <time className={styles.date} dateTime={post.date}>
-          {date}
-        </time>
+      <article>
+        <Link href="/posts">← Tilbage til alle opslag</Link>
         <h1 dangerouslySetInnerHTML={{ __html: post.title.rendered }} />
-        <div
-          className="wp-content"
-          dangerouslySetInnerHTML={{ __html: post.content.rendered }}
-        />
+        {image && (
+          <img
+            className="featured-image"
+            src={image.source_url}
+            alt={image.alt_text ?? ""}
+          />
+        )}
+        <time dateTime={post.date}>{date}</time>
+        <div dangerouslySetInnerHTML={{ __html: post.content.rendered }} />
       </article>
     </main>
   );

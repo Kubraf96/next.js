@@ -1,12 +1,13 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import PostList from "@/components/PostList";
+import { getLatestPosts } from "@/lib/wordpress";
 
-export default function Home() {
+export default async function Home() {
+  const posts = await getLatestPosts();
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-<h1>good morning beautiful</h1>
-      </main>
-    </div>
+    <main>
+      <h1>Stories from Aarhus</h1>
+      <PostList posts={posts} />
+    </main>
   );
 }
